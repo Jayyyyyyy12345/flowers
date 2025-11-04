@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Flower Garden</title>
+    <style>
+        :root {
+            --petal-color: #ff69b4;
+            --center-color: #ffd700;
+            --stem-color: #2d7a3e;
+            --leaf-color: #3a9b4f;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #87ceeb 0%, #e0f6ff 50%, #90ee90 100%);
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
+        }
+        /* Day/Night toggle */
+        body.night {
+            background: linear-gradient(to bottom, #0f1419 0%, #1a2332 50%, #0d1b2a 100%);
+        }
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .garden {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            align-items: flex-end;
+        }
+        .flower {
+            position: absolute;
+            bottom: 0;
+            pointer-events: all;
+            cursor: pointer;
+            animation: appear 0.5s ease-out;
+            transform-origin: bottom center;
+        }
+        @keyframes appear {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .stem {
+            width: 8px;
+            height: 200px;
+            background: linear-gradient(to bottom, var(--stem-color), #1a5a2a);
+            border-radius: 4px;
+            position: relative;
+            margin: 0 auto;
+            transform-origin: bottom center;
+            animation: sway 3s ease-in-out infinite;
+            display: block;
+        }
+        @keyframes sway {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(3deg); }
+            75% { transform: rotate(-3deg); }
+        }
+        .leaf {
+            position: absolute;
+            width: 40px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--leaf-color) 0%, color-mix(in srgb, var(--leaf-color), black 20%) 100%);
+            box-shadow: inset 0 -2px 8px rgba(0,0,0,0.2);
+        }
+        .leaf.left {
+            left: -35px;
+            top: 80px;
+            border-radius: 0 100% 0 100%;
+            transform-origin: bottom right;
+            animation: leafWaveLeft 2.5s ease-in-out infinite;
+        }
+        .leaf.right {
+            right: -35px;
+            top: 120px;
+            border-radius: 100% 0 100% 0;
+            transform-origin: bottom left;
+            animation: leafWaveRight 2.5s ease-in-out infinite 0.5s;
+        }
+        @keyframes leafWaveLeft {
+            0%, 100% {
+                transform: rotate(-45deg);
+            }
+            50% {
+                transform: rotate(-35deg);
+            }
+        }
+       
+        @keyframes leafWaveRight {
+            0%, 100% {
+                transform: rotate(45deg);
+            }
+            50% {
+                transform: rotate(35deg);
+            }
+        }
+        .flower-head {
+            position: absolute;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .petals {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            animation: gentleRotate 20s linear infinite;
+            top: 0;
+            left: 0;
+        }
+        @keyframes gentleRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .petal {
+            position: absolute;
+            width: 45px;
+            height: 65px;
+            background: radial-gradient(ellipse at 50% 30%,
+                color-mix(in srgb, var(--petal-color), white 40%) 0%,
+                var(--petal-color) 50%,
+                color-mix(in srgb, var(--petal-color), black 15%) 100%);
+            border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
+            top: 50%;
+            left: 50%;
+            transform-origin: center bottom;
+            animation: bloom 2s ease-out forwards;
+            opacity: 0;
+            box-shadow:
+                inset 0 -5px 15px rgba(0,0,0,0.15),
+                0 3px 12px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        @keyframes bloom {
+            from {
+                transform: translate(-50%, -50%) scale(0) rotate(var(--rotation));
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) translateY(-28px) scale(1) rotate(var(--rotation));
+                opacity: 1;
+            }
+        }
+        .center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 35px;
+            height: 35px;
+            background: radial-gradient(circle at 30% 30%,
+                color-mix(in srgb, var(--center-color), white 50%) 0%,
+                var(--center-color) 40%,
+                color-mix(in srgb, var(--center-color), black 25%) 100%);
+            border-radius: 50%;
+            z-index: 10;
+            animation: pulse 2s ease-in-out infinite;
+            box-shadow:
+                0 0 25px rgba(255, 215, 0, 0.6),
+                inset 0 -3px 8px rgba(0,0,0,0.2);
+            border: 2px solid rgba(255,255,255,0.4);
+        }
+       
+        .center::before {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 20%;
+            width: 40%;
+            height: 40%;
+            background: radial-gradient(circle, rgba(255,255,255,0.8), transparent);
+            border-radius: 50%;
+        }
+       
+        /* Sunflower specific styles */
+        .sunflower-petal {
+            width: 40px;
+            height: 60px;
+            border-radius: 50% 50% 50% 50% / 80% 80% 20% 20%;
+        }
+       
+        .sunflower-center {
+            width: 45px;
+            height: 45px;
+            background: radial-gradient(circle at 30% 30%,
+                color-mix(in srgb, var(--center-color), white 20%) 0%,
+                var(--center-color) 40%,
+                color-mix(in srgb, var(--center-color), black 30%) 100%);
+        }
+       
+        .sunflower-center::before {
+            background: radial-gradient(circle, rgba(139, 69, 19, 0.3), transparent);
+        }
+       
+        .seed {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: color-mix(in srgb, var(--center-color), black 40%);
+            border-radius: 50%;
+            opacity: 0.8;
+        }
+       
+        /* Rose specific styles */
+        .rose-petal {
+            width: 38px;
+            height: 55px;
+            border-radius: 80% 20% 80% 20% / 80% 20% 80% 20%;
+            transform-origin: center center;
+            background: radial-gradient(ellipse at 40% 30%,
+                color-mix(in srgb, var(--petal-color), white 30%) 0%,
+                var(--petal-color) 45%,
+                color-mix(in srgb, var(--petal-color), black 25%) 100%);
+            box-shadow:
+                inset 2px -3px 10px rgba(0,0,0,0.25),
+                0 2px 10px rgba(0,0,0,0.3);
+        }
+       
+        @keyframes bloom {
+            from {
+                transform: translate(-50%, -50%) scale(0) rotate(var(--rotation));
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) translateY(-28px) scale(var(--layer-scale, 1)) rotate(var(--rotation));
+                opacity: 1;
+            }
+        }
+       
+        .rose-center {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle at 30% 30%,
+                color-mix(in srgb, var(--center-color), white 40%) 0%,
+                var(--center-color) 50%,
+                color-mix(in srgb, var(--petal-color), black 30%) 100%);
+        }
+       
+        /* Daisy specific styles */
+        .daisy-petal {
+            width: 35px;
+            height: 50px;
+            border-radius: 50% 50% 50% 50% / 90% 90% 10% 10%;
+            background: radial-gradient(ellipse at 50% 20%,
+                var(--petal-color) 0%,
+                color-mix(in srgb, var(--petal-color), #f0f0f0 20%) 70%,
+                color-mix(in srgb, var(--petal-color), gray 10%) 100%);
+            box-shadow:
+                inset 0 -3px 8px rgba(0,0,0,0.08),
+                0 2px 8px rgba(0,0,0,0.15);
+        }
+       
+        .daisy-center {
+            width: 32px;
+            height: 32px;
+            background: radial-gradient(circle at 30% 30%,
+                color-mix(in srgb, var(--center-color), white 60%) 0%,
+                var(--center-color) 45%,
+                color-mix(in srgb, var(--center-color), orange 20%) 100%);
+        }
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+        /* Particles */
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--petal-color);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 10s ease-in-out infinite;
+            opacity: 0.6;
+        }
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(50px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        /* Sun/Moon */
+        .celestial {
+            position: fixed;
+            top: 50px;
+            right: 80px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffd700, #ffa500);
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
+            transition: all 0.5s ease;
+        }
+        body.night .celestial {
+            background: radial-gradient(circle, #f0f0f0, #c0c0c0);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.5);
+        }
+        /* Stars for night mode */
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        body.night .star {
+            opacity: 1;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* ================================================================== */
+        /* ======================= RESPONSIVE ADDITIONS ===================== */
+        /* ================================================================== */
+
+        /* Use a CSS variable to scale the whole flower on small screens */
+        .flower { --mobile-scale: 1; transform: scale(var(--mobile-scale)); }
+
+        @media (max-width: 600px) {
+            .flower { --mobile-scale: 0.75; }
+            .controls { top: 10px; gap: 8px; }
+            .btn { padding: 10px 16px; font-size: 14px; }
+            .celestial { top: 15px; right: 15px; width: 60px; height: 60px; }
+        }
+        @media (max-width: 400px) {
+            .flower { --mobile-scale: 0.55; }
+            .btn { padding: 8px 12px; font-size: 13px; }
+            .celestial { width: 50px; height: 50px; }
+        }
+        @media (max-width: 320px) {
+            .flower { --mobile-scale: 0.45; }
+            .btn { font-size: 12px; padding: 7px 10px; }
+        }
+
+        /* Make sure the garden never overflows on tiny screens */
+        .garden { padding-top: 80px; }   /* space for fixed controls */
+    </style>
+</head>
+<body>
+    <div class="celestial"></div>
+   
+    <div class="controls">
+        <button class="btn" onclick="growFlower()">Grow a Flower</button>
+        <button class="btn" onclick="clearGarden()">Clear Garden</button>
+        <button class="btn" onclick="toggleDayNight()">Day/Night</button>
+    </div>
+    <div class="garden" id="garden"></div>
+
+    <script>
+        const colors = [
+            { petal: '#ff1493', center: '#ffd700' },
+            { petal: '#ff69b4', center: '#ffeb3b' },
+            { petal: '#da70d6', center: '#ffa500' },
+            { petal: '#ff6b9d', center: '#ffe082' },
+            { petal: '#ff4757', center: '#ffd93d' },
+            { petal: '#ee5a6f', center: '#ffdd59' },
+            { petal: '#ffd700', center: '#8b4513', type: 'sunflower' },
+            { petal: '#ffb700', center: '#6b3410', type: 'sunflower' },
+            { petal: '#dc143c', center: '#ffd700', type: 'rose' },
+            { petal: '#c41e3a', center: '#ffe4b5', type: 'rose' },
+            { petal: '#ff1744', center: '#fff5e6', type: 'rose' },
+            { petal: '#ffffff', center: '#ffd700', type: 'daisy' },
+            { petal: '#fffaf0', center: '#ffeb3b', type: 'daisy' }
+        ];
+        let isNight = false;
+
+        function createFlower(x, y) {
+            const flower = document.createElement('div');
+            flower.className = 'flower';
+            flower.style.left = x + 'px';
+           
+            const colorScheme = colors[Math.floor(Math.random() * colors.length)];
+            const isSunflower = colorScheme.type === 'sunflower';
+            const isRose = colorScheme.type === 'rose';
+            const isDaisy = colorScheme.type === 'daisy';
+           
+            let petalCount;
+            if (isSunflower) {
+                petalCount = Math.floor(Math.random() * 4) + 12;
+            } else if (isRose) {
+                petalCount = Math.floor(Math.random() * 6) + 18;
+            } else if (isDaisy) {
+                petalCount = Math.floor(Math.random() * 5) + 16;
+            } else {
+                petalCount = Math.floor(Math.random() * 4) + 6;
+            }
+           
+            flower.style.setProperty('--petal-color', colorScheme.petal);
+            flower.style.setProperty('--center-color', colorScheme.center);
+           
+            const stem = document.createElement('div');
+            stem.className = 'stem';
+            stem.style.animationDelay = Math.random() * 2 + 's';
+           
+            const leftLeaf = document.createElement('div');
+            leftLeaf.className = 'leaf left';
+            const rightLeaf = document.createElement('div');
+            rightLeaf.className = 'leaf right';
+            stem.appendChild(leftLeaf);
+            stem.appendChild(rightLeaf);
+           
+            const flowerHead = document.createElement('div');
+            flowerHead.className = 'flower-head';
+           
+            const petals = document.createElement('div');
+            petals.className = 'petals';
+           
+            const layers = isRose ? 3 : 1;
+            for (let layer = 0; layer < layers; layer++) {
+                const layerPetals = Math.floor(petalCount / layers);
+                const layerScale = isRose ? 1 - (layer * 0.15) : 1;
+               
+                for (let i = 0; i < layerPetals; i++) {
+                    const petal = document.createElement('div');
+                    petal.className = 'petal';
+                   
+                    if (isSunflower) {
+                        petal.classList.add('sunflower-petal');
+                    } else if (isRose) {
+                        petal.classList.add('rose-petal');
+                        petal.style.setProperty('--layer-scale', layerScale);
+                    } else if (isDaisy) {
+                        petal.classList.add('daisy-petal');
+                    }
+                   
+                    const rotation = (360 / layerPetals) * i + (layer * 15);
+                    petal.style.setProperty('--rotation', rotation + 'deg');
+                    petal.style.animationDelay = (i * 0.08 + layer * 0.3) + 's';
+                    petals.appendChild(petal);
+                }
+            }
+           
+            const center = document.createElement('div');
+            center.className = 'center';
+           
+            if (isSunflower) {
+                center.classList.add('sunflower-center');
+                for (let i = 0; i < 20; i++) {
+                    const seed = document.createElement('div');
+                    seed.className = 'seed';
+                    seed.style.top = Math.random() * 80 + 10 + '%';
+                    seed.style.left = Math.random() * 80 + 10 + '%';
+                    center.appendChild(seed);
+                }
+            } else if (isRose) {
+                center.classList.add('rose-center');
+            } else if (isDaisy) {
+                center.classList.add('daisy-center');
+            }
+           
+            flowerHead.appendChild(petals);
+            flowerHead.appendChild(center);
+            stem.appendChild(flowerHead);
+            flower.appendChild(stem);
+           
+            flower.addEventListener('click', function() {
+                createParticles(this);
+                setTimeout(() => {
+                    this.style.animation = 'appear 0.5s ease-out reverse';
+                    setTimeout(() => this.remove(), 500);
+                }, 100);
+            });
+           
+            document.getElementById('garden').appendChild(flower);
+        }
+
+        function createParticles(flower) {
+            const rect = flower.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top;
+           
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.animationDelay = (Math.random() * 0.5) + 's';
+                particle.style.animationDuration = (Math.random() * 5 + 5) + 's';
+               
+                const angle = (Math.PI * 2 * i) / 15;
+                const distance = 50;
+                particle.style.setProperty('--x', Math.cos(angle) * distance + 'px');
+               
+                document.body.appendChild(particle);
+               
+                setTimeout(() => particle.remove(), 10000);
+            }
+        }
+
+        /* ---- Only change: use window.innerWidth for mobile safety ---- */
+        function growFlower() {
+            const maxX = Math.max(window.innerWidth - 150, 0);
+            const x = Math.random() * maxX + 75;
+            createFlower(x, 0);
+        }
+
+        function clearGarden() {
+            const garden = document.getElementById('garden');
+            const flowers = garden.querySelectorAll('.flower');
+            flowers.forEach((flower, index) => {
+                setTimeout(() => {
+                    flower.style.animation = 'appear 0.5s ease-out reverse';
+                    setTimeout(() => flower.remove(), 500);
+                }, index * 100);
+            });
+        }
+
+        function toggleDayNight() {
+            isNight = !isNight;
+            document.body.classList.toggle('night');
+           
+            if (isNight) {
+                createStars();
+            } else {
+                document.querySelectorAll('.star').forEach(star => star.remove());
+            }
+        }
+
+        function createStars() {
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 70 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                document.body.appendChild(star);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => growFlower(), i * 500);
+            }
+        });
+    </script>
+</body>
+</html>
